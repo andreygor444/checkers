@@ -5,15 +5,16 @@ using UnityEngine.EventSystems;
 
 public class Checker : MonoBehaviour, IPointerClickHandler
 {
-    private const int white = 1, black = -1;
-    private int x, y;
-    private int color;
+    private const bool white = true, black = false;
+    private int x, y, id;
+    private bool color;
     private bool isKing = false;
     private GameManager gm;
-    public void Init(int x, int y, int color, GameManager gm)
+    public void Init(int x, int y, bool color, int id, GameManager gm)
     {
         SetPos(x, y);
         SetColor(color);
+        this.id = id;
         this.gm = gm;
     }
 
@@ -29,16 +30,21 @@ public class Checker : MonoBehaviour, IPointerClickHandler
         return new Pair<int, int>(x, y);
     }
 
-    private void SetColor(int color)
+    private void SetColor(bool color)
     {
         this.color = color;
-        Color color_ = color == white ? Color.white : Color.black;
+        Color color_ = color == white ? Color.white : Color.grey;
         this.GetComponent<Renderer>().material.SetColor("_Color", color_);
     }
 
-    public int GetColor()
+    public bool GetColor()
     {
         return color;
+    }
+
+    public int GetId()
+    {
+        return id;
     }
 
     public bool IsKing()
@@ -47,10 +53,8 @@ public class Checker : MonoBehaviour, IPointerClickHandler
     }
     public void OnPointerClick(PointerEventData data)
     {
-        List<Pair<int, int>> possibleMoves = new List<Pair<int, int>>();
         if (x + 1 >= 0 && x + 1 < 8 && y + 1 >= 0 && y + 1 < 8)
         {
-            //SetColor(Color.red);
             gm.SelectChecker(this);
         }
     }
