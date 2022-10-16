@@ -5,6 +5,7 @@ using UnityEngine.EventSystems;
 
 public class PossibleMoveMarker : MonoBehaviour, IPointerClickHandler
 {
+	private const float boardWidth_f = 8.75f, boardHeight_f = 8.75f, cellSize = 1.25f;
     private int x, y;
     private GameManager gm;
     private Checker checker;
@@ -17,7 +18,7 @@ public class PossibleMoveMarker : MonoBehaviour, IPointerClickHandler
         this.checker = checker;
         this.gm = gm;
         this.victim = victim;
-        transform.position = new Vector3(x * Constants.cellSize - Constants.boardWidth_f / 2, y * Constants.cellSize - Constants.boardHeight_f / 2, 0);
+        transform.position = new Vector3(x * cellSize - boardWidth_f / 2, y * cellSize - boardHeight_f / 2, 0);
     }
 #nullable disable
     

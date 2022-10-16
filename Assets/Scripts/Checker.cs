@@ -5,10 +5,11 @@ using UnityEngine.EventSystems;
 
 public class Checker : MonoBehaviour, IPointerClickHandler
 {
+	private const float boardWidth_f = 8.75f, boardHeight_f = 8.75f, cellSize = 1.25f;
     private const bool white = true, black = false;
     private int x, y, id;
     private bool color;
-    private bool isKing = false;
+    private bool isKing = false, alive = true;
     private GameManager gm;
     public void Init(int x, int y, bool color, int id, GameManager gm)
     {
@@ -22,7 +23,7 @@ public class Checker : MonoBehaviour, IPointerClickHandler
     {
         this.x = x;
         this.y = y;
-        transform.position = new Vector3(x * Constants.cellSize - Constants.boardWidth_f / 2, y * Constants.cellSize - Constants.boardHeight_f / 2, 0);
+        transform.position = new Vector3(x * cellSize - boardWidth_f / 2, y * cellSize - boardHeight_f / 2, 0);
     }
 
     public Pair<int, int> GetPos()
@@ -53,14 +54,16 @@ public class Checker : MonoBehaviour, IPointerClickHandler
     }
     public void OnPointerClick(PointerEventData data)
     {
-        if (x + 1 >= 0 && x + 1 < 8 && y + 1 >= 0 && y + 1 < 8)
-        {
-            gm.SelectChecker(this);
-        }
+        gm.SelectChecker(this);
     }
 
-    void Update()
+    public void Kill()
     {
-        
+        alive = false;
+    }
+
+    public bool IsAlive()
+    {
+        return alive;
     }
 }
