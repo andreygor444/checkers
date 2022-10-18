@@ -28,6 +28,10 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        foreach (Checker checker in checkers)
+        {
+            checker.Kill();
+        }
         checkers = new Checker[24];
         int currentCheckerInd = 0;
         field = new int[boardSize][];
@@ -86,6 +90,8 @@ public class GameManager : MonoBehaviour
 
     List<Move> GetPossibleMoves(Checker checker)
     {
+        if (checker.IsKing())
+            return getPossibleMovesForKing(checker);
         List<Move> moves = new List<Move>();
         Pair<int, int> pos = checker.GetPos();
         int x = pos.first, y = pos.second, x_, y_;
@@ -123,6 +129,43 @@ public class GameManager : MonoBehaviour
 
         return moves;
     }
+    
+    List<Move> getPossibleMovesForKing(Checker checker) {
+        List<Move> moves = new List<Move>();
+        Pair<int, int> pos = checker.GetPos();
+        int x = pos.first, y = pos.second, x_, y_;
+#nullable enable
+        Checker? victim;
+#nullable disable
+        for (int i = -1; i <= 1; i += 2)
+        {
+            for (int j = -1; j <= 1; j += 2)
+            {
+                victim = null;
+                x_ = x;
+                y_ = y;
+                while (true)
+                {
+                    x_ += i;
+                    y_ += j;
+                    if (x_ < 0 || x_ >= boardSize || y_ < 0 || y_ >= boardSize ||
+                        (field[x_][y_] >= 0 && checkers[field[x_][y_]].GetColor() == checker.GetColor()))
+                        break;
+                    if (field[x_][y_] != none && field[x_][y_] != possibleMove)
+                    {
+                        if (victim != null)
+                            break;
+                        victim = checkers[field[x_][y_]];
+                        continue;
+                    }
+
+                    moves.Add(new Move { checker = checker, x = x_, y = y_, victim = victim });
+                }
+            }
+        }
+        
+        return moves;
+    }
 
     void showPossibleMoves(Checker checker)
     {
@@ -143,12 +186,6 @@ public class GameManager : MonoBehaviour
                 Instantiate(moveMarkerPrefab, new Vector3(0, 0, 0), Quaternion.identity) as PossibleMoveMarker);
             moveMarkers[moveMarkers.Count - 1].Init(move.x, move.y, checker, this, move.victim);
         }
-
-
-        if (checker.IsKing())
-        {
-
-        }
     }
 
 #nullable enable
@@ -159,20 +196,28 @@ public class GameManager : MonoBehaviour
         Pair<int, int> movePos = moveMarker.GetPos();
         int x = checkerPos.first, y = checkerPos.second, x_ = movePos.first, y_ = movePos.second;
         checker.SetPos(x_, y_);
+        if (checker.GetColor() == white && y_ == boardSize - 1 || checker.GetColor() == black && y_ == 0)
+        {
+            checker.SetKing();
+        }
         field[x][y] = none;
         field[x_][y_] = checker.GetId();
         if (victim == null)
         {
             currentTurnColor = !currentTurnColor;
+            if (!CanAnyoneMove())
+            {
+                Debug.Log("Finish");
+                Start();
+            }
             canAnyoneKill = CanAnyoneKill();
             return;
         }
 
         Pair<int, int> victimPos = victim.GetPos();
-        victim.Kill();
         x = victimPos.first;
         y = victimPos.second;
-        Destroy(victim.gameObject);
+        victim.Kill();
         field[x][y] = none;
         if (CanKill(GetPossibleMoves(checker)))
         {
@@ -182,6 +227,11 @@ public class GameManager : MonoBehaviour
         }
 
         currentTurnColor = !currentTurnColor;
+        if (!CanAnyoneMove())
+        {
+            Debug.Log("Finish");
+            Start();
+        }
         canAnyoneKill = CanAnyoneKill();
         attacker = null;
     }
@@ -200,16 +250,27 @@ public class GameManager : MonoBehaviour
 
     bool CanAnyoneKill()
     {
-        bool ans = false;
         foreach (var checker in checkers)
         {
             if (checker.IsAlive() && checker.GetColor() == currentTurnColor && CanKill(GetPossibleMoves(checker)))
             {
-                ans = true;
-                break;
+                return true;
             }
         }
 
-        return ans;
+        return false;
+    }
+
+    bool CanAnyoneMove()
+    {
+        foreach (var checker in checkers)
+        {
+            if (checker.IsAlive() && checker.GetColor() == currentTurnColor && GetPossibleMoves(checker).Count != 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

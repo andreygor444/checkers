@@ -43,15 +43,25 @@ public class Checker : MonoBehaviour, IPointerClickHandler
         return color;
     }
 
-    public int GetId()
-    {
-        return id;
-    }
+	public void SetKing() {
+		isKing = true;
+		if (color == white) {
+			this.GetComponent<Renderer>().material.SetColor("_Color", Color.yellow);
+		} else {
+			this.GetComponent<Renderer>().material.SetColor("_Color", Color.blue);
+		}
+	}
 
     public bool IsKing()
     {
         return isKing;
     }
+
+	public int GetId()
+    {
+        return id;
+    }
+
     public void OnPointerClick(PointerEventData data)
     {
         gm.SelectChecker(this);
@@ -59,6 +69,7 @@ public class Checker : MonoBehaviour, IPointerClickHandler
 
     public void Kill()
     {
+		if (alive) Destroy(this.gameObject);
         alive = false;
     }
 
